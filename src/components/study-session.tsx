@@ -49,13 +49,13 @@ export function StudySession({
   const [now, setNow] = useState(() => Date.now());
   const savingRef = useRef(false);
   const pending = useRef<ReviewRequest | null>(null);
-  const heading = useRef<HTMLDivElement>(null);
+  const recallInput = useRef<HTMLTextAreaElement>(null);
   const ratingFocus = useRef<HTMLDivElement>(null);
   const card = study.cards.find((item) => item.id === study.queue[0]);
 
   useEffect(() => {
-    heading.current?.focus();
-  }, [card?.id]);
+    if (!revealed) recallInput.current?.focus();
+  }, [card?.id, revealed]);
 
   useEffect(() => {
     if (revealed) ratingFocus.current?.focus();
@@ -200,8 +200,6 @@ export function StudySession({
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
             <div
-              ref={heading}
-              tabIndex={-1}
               className="question-prompt"
               role="heading"
               aria-level={2}
@@ -213,6 +211,7 @@ export function StudySession({
               <Field>
                 <FieldLabel htmlFor="recall-answer">Your recall</FieldLabel>
                 <Textarea
+                  ref={recallInput}
                   id="recall-answer"
                   placeholder="What do you remember?"
                   rows={3}
