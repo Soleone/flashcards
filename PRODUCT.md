@@ -22,6 +22,8 @@ Agents write topic decks in `$DATA/apps/flashcards`. The web app scans this dire
 
 Confirmed: local server and files, FSRS spaced repetition, question/answer cards, optional typed recall before revealing the answer, self-rating rather than automatic grading. Progress is stored separately from deck content. No accounts or cross-device sync in this version.
 
+Review controls: revealing within 5 seconds of showing a question defaults to Easy (4), otherwise Good (3). Left/Right selects between ratings 1–4 without saving; Enter submits the current selection. Number keys and rating clicks submit directly.
+
 ## Product Principles
 
 - Keep content open and agent-friendly.

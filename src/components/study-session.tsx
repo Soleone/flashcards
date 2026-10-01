@@ -40,6 +40,7 @@ export function StudySession({
 }) {
   const [study, setStudy] = useState(initial);
   const [revealed, setRevealed] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState<Grade>(3);
   const [answer, setAnswer] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -49,17 +50,25 @@ export function StudySession({
   const [now, setNow] = useState(() => Date.now());
   const savingRef = useRef(false);
   const pending = useRef<ReviewRequest | null>(null);
+  const recallStartedAt = useRef(0);
   const recallInput = useRef<HTMLTextAreaElement>(null);
   const ratingFocus = useRef<HTMLDivElement>(null);
   const card = study.cards.find((item) => item.id === study.queue[0]);
 
   useEffect(() => {
-    if (!revealed) recallInput.current?.focus();
+    if (!revealed) {
+      recallStartedAt.current = performance.now();
+      recallInput.current?.focus();
+    }
   }, [card?.id, revealed]);
 
   useEffect(() => {
-    if (revealed) ratingFocus.current?.focus();
-  }, [revealed]);
+    if (revealed) {
+      ratingFocus.current
+        ?.querySelector<HTMLButtonElement>(`[data-grade="${selectedGrade}"]`)
+        ?.focus();
+    }
+  }, [revealed, selectedGrade]);
 
   useEffect(() => {
     if (card) return;
@@ -67,9 +76,16 @@ export function StudySession({
     return () => window.clearInterval(timer);
   }, [card]);
 
+  function revealAnswer() {
+    if (!card || revealed) return;
+    setSelectedGrade(performance.now() - recallStartedAt.current <= 5000 ? 4 : 3);
+    setRevealed(true);
+  }
+
   async function rate(grade: Grade) {
     if (!card || !revealed || savingRef.current || conflict) return;
     savingRef.current = true;
+    setSelectedGrade(grade);
     setSaving(true);
     setError("");
     if (
@@ -117,6 +133,13 @@ export function StudySession({
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement;
+      const inRatings = ratingFocus.current?.contains(target);
+      if (event.repeat && inRatings) {
+        if (event.key === "Enter" || event.code === "Space")
+          event.preventDefault();
+        return;
+      }
       if (
         event.repeat ||
         event.isComposing ||
@@ -128,8 +151,8 @@ export function StudySession({
         !card
       )
         return;
-      const target = event.target as HTMLElement;
       if (
+        !inRatings &&
         target.closest(
           'input, textarea, button, a, [role="combobox"], [role="switch"], [role="listbox"], [contenteditable="true"]',
         )
@@ -137,10 +160,22 @@ export function StudySession({
         return;
       if (event.code === "Space" && !revealed) {
         event.preventDefault();
-        setRevealed(true);
+        revealAnswer();
       } else if (revealed && /^[1-4]$/.test(event.key)) {
         event.preventDefault();
         void rate(Number(event.key) as Grade);
+      } else if (revealed && event.key === "Enter") {
+        event.preventDefault();
+        void rate(selectedGrade);
+      } else if (
+        revealed &&
+        (event.key === "ArrowLeft" || event.key === "ArrowRight")
+      ) {
+        event.preventDefault();
+        const direction = event.key === "ArrowRight" ? 1 : -1;
+        setSelectedGrade((grade) =>
+          Math.max(1, Math.min(4, grade + direction)) as Grade,
+        );
       }
     }
     document.addEventListener("keydown", onKeyDown);
@@ -223,10 +258,11 @@ export function StudySession({
                       (event.ctrlKey || event.metaKey) &&
                       event.key === "Enter" &&
                       !revealed &&
+                      !event.repeat &&
                       !event.nativeEvent.isComposing
                     ) {
                       event.preventDefault();
-                      setRevealed(true);
+                      revealAnswer();
                     }
                   }}
                 />
@@ -243,8 +279,13 @@ export function StudySession({
               </div>
             ) : null}
             {revealed ? (
-              <div className="flex flex-col gap-4">
-                <div ref={ratingFocus} tabIndex={-1} className="rating-focus">
+              <div
+                ref={ratingFocus}
+                className="flex flex-col gap-4"
+                role="group"
+                aria-label="Recall rating"
+              >
+                <div>
                   <p className="text-sm font-medium">
                     How well did you recall it?
                   </p>
@@ -256,9 +297,13 @@ export function StudySession({
                   {ratings.map((rating) => (
                     <div key={rating.grade} className="flex flex-col gap-2">
                       <Button
-                        variant={rating.grade === 3 ? "default" : "outline"}
+                        variant={
+                          rating.grade === selectedGrade ? "default" : "outline"
+                        }
                         size="lg"
+                        data-grade={rating.grade}
                         disabled={saving || conflict}
+                        onFocus={() => setSelectedGrade(rating.grade)}
                         onClick={() => void rate(rating.grade)}
                         title={rating.description}
                       >
@@ -276,11 +321,11 @@ export function StudySession({
                 <p className="text-center text-xs text-muted-foreground">
                   {saving
                     ? "Saving your review…"
-                    : "Intervals adapt to your recall. Press 1–4 to rate."}
+                    : "←/→ to choose · Enter to save · 1–4 to rate directly"}
                 </p>
               </div>
             ) : (
-              <Button size="lg" onClick={() => setRevealed(true)}>
+              <Button size="lg" onClick={revealAnswer}>
                 Reveal answer <ArrowRightIcon data-icon="inline-end" />
               </Button>
             )}
@@ -326,7 +371,7 @@ export function StudySession({
       >
         {lastSave ||
           (card
-            ? "Space or Ctrl/⌘ + Enter to reveal · 1–4 to rate · Progress saved locally"
+            ? "Space or Ctrl/⌘ + Enter to reveal · ←/→ to choose · Enter to save · 1–4 to rate"
             : `${reviewed} reviews saved this session`)}
       </p>
       <details className="learning-details">

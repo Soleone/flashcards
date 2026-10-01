@@ -27,7 +27,7 @@ Production serves built assets through the same local backend.
 
 ## Study
 
-Select a deck, recall the answer, optionally type it, reveal, and self-rate. The rating controls preview when the card returns. Space reveals; 1–4 rates after reveal; Ctrl/⌘ + Enter reveals while typing. Refresh discovers newly generated decks and due cards. Card-by-card progress includes learning state, review count, and estimated recall. Light/dark theme is stored in this browser.
+Select a deck, recall the answer, optionally type it, reveal, and self-rate. The rating controls preview when the card returns. Space reveals; Ctrl/⌘ + Enter reveals while typing. Revealing within 5 seconds defaults to Easy (4), otherwise Good (3). After reveal, Left/Right selects a rating and Enter saves it; 1–4 or clicking a rating saves directly. Refresh discovers newly generated decks and due cards. Card-by-card progress includes learning state, review count, and estimated recall. Light/dark theme is stored in this browser.
 
 See [docs/deck-format.md](docs/deck-format.md) for the complete JSON contract and a reusable agent prompt. A sample deck lives in `examples/` and is never silently added to your data directory.
 
