@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "learning-how-to-learn",
+  "title": "Learning how to learn",
+  "description": "A starter deck about remembering more with less rereading.",
+  "cards": [
+    { "id": "active-recall", "question": "Why is trying to recall an answer more useful than simply rereading it?", "answer": "**Active recall** makes you retrieve information from memory. It reveals gaps that rereading can hide.\n\nTry to answer before revealing the reference, even if you are unsure.", "tags": ["Recall"] },
+    { "id": "spacing", "question": "What is spaced repetition?", "answer": "Reviewing information at increasing intervals rather than all at once.\n\nThe aim is to revisit material when remembering it takes some effort, before it is forgotten completely.", "tags": ["Spacing"] },
+    { "id": "honest-rating", "question": "When should you choose Again rather than Hard?", "answer": "Choose **Again** when you could not recall the answer or recalled it incorrectly.\n\nChoose **Hard** when you recalled the correct answer, but it took substantial effort. Recognizing an answer after revealing it is not the same as recalling it.", "tags": ["Self-rating"] },
+    { "id": "small-cards", "question": "What makes a flashcard easier to learn and rate accurately?", "answer": "One clear question testing **one idea**.\n\nBreak a broad question into several focused cards. This helps you identify exactly which idea needs more practice.", "tags": ["Card design"] },
+    { "id": "retrieval-example", "question": "How could you turn a paragraph of notes into useful flashcards?", "answer": "1. Identify the central ideas.\n2. Write one specific question for each idea.\n3. Write a short, unambiguous answer.\n4. Add an example when it helps understanding.\n5. Keep each card’s ID stable when editing it.", "tags": ["Card design"] },
+    { "id": "difficulty", "question": "Does struggling briefly to recall something always mean your learning is failing?", "answer": "No. Effortful, successful retrieval can be useful practice.\n\nBut repeated failure is a signal to simplify the card, understand the underlying idea, or review the source material.", "tags": ["Recall"] }
+  ]
+}
