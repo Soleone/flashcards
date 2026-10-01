@@ -9,14 +9,7 @@ import type { Grade, ReviewRequest, StudyDeck } from "@/contracts";
 import { request, ApiError } from "@/lib/api";
 import { Markdown } from "./markdown";
 import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
 import {
   Empty,
@@ -28,7 +21,6 @@ import {
 } from "./ui/empty";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "./ui/field";
 import { Textarea } from "./ui/textarea";
-import { Switch } from "./ui/switch";
 import { Separator } from "./ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
@@ -48,7 +40,6 @@ export function StudySession({
 }) {
   const [study, setStudy] = useState(initial);
   const [revealed, setRevealed] = useState(false);
-  const [typed, setTyped] = useState(false);
   const [answer, setAnswer] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -201,24 +192,17 @@ export function StudySession({
 
       {card ? (
         <Card className="study-card" aria-busy={saving}>
-          <CardHeader>
-            <CardTitle>
-              <div className="flex items-center justify-between gap-2">
-                <span>Recall first. Then check.</span>
-                <Badge variant="outline">{card.state}</Badge>
-              </div>
-            </CardTitle>
-            <CardDescription>
-              {card.tags?.length
-                ? card.tags.join(" · ")
-                : "Take a moment to answer from memory."}
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Badge variant="outline">{card.state}</Badge>
+            {card.tags?.length ? (
+              <CardDescription>{card.tags.join(" · ")}</CardDescription>
+            ) : null}
           </CardHeader>
-          <CardContent className="flex flex-col gap-8">
+          <CardContent className="flex flex-col gap-6">
             <div
               ref={heading}
               tabIndex={-1}
-              className="question-focus"
+              className="question-prompt"
               role="heading"
               aria-level={2}
             >
@@ -226,42 +210,31 @@ export function StudySession({
               <Markdown>{card.question}</Markdown>
             </div>
             <FieldGroup>
-              <Field orientation="horizontal">
-                <FieldLabel htmlFor="typed-recall">Type my answer</FieldLabel>
-                <Switch
-                  id="typed-recall"
-                  checked={typed}
-                  onCheckedChange={setTyped}
-                  disabled={saving || revealed}
+              <Field>
+                <FieldLabel htmlFor="recall-answer">Your recall</FieldLabel>
+                <Textarea
+                  id="recall-answer"
+                  placeholder="What do you remember?"
+                  rows={3}
+                  value={answer}
+                  readOnly={revealed}
+                  onChange={(event) => setAnswer(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (
+                      (event.ctrlKey || event.metaKey) &&
+                      event.key === "Enter" &&
+                      !revealed &&
+                      !event.nativeEvent.isComposing
+                    ) {
+                      event.preventDefault();
+                      setRevealed(true);
+                    }
+                  }}
                 />
+                <FieldDescription>
+                  For comparison only. Not graded or saved.
+                </FieldDescription>
               </Field>
-              {typed ? (
-                <Field>
-                  <FieldLabel htmlFor="recall-answer">Your recall</FieldLabel>
-                  <Textarea
-                    id="recall-answer"
-                    placeholder="What do you remember?"
-                    value={answer}
-                    readOnly={revealed}
-                    onChange={(event) => setAnswer(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (
-                        (event.ctrlKey || event.metaKey) &&
-                        event.key === "Enter" &&
-                        !revealed &&
-                        !event.nativeEvent.isComposing
-                      ) {
-                        event.preventDefault();
-                        setRevealed(true);
-                      }
-                    }}
-                  />
-                  <FieldDescription>
-                    Only for comparison. Not graded or saved. Ctrl/⌘ + Enter
-                    reveals the answer.
-                  </FieldDescription>
-                </Field>
-              ) : null}
             </FieldGroup>
             {revealed ? (
               <div className="answer-reveal flex flex-col gap-4">
@@ -270,10 +243,8 @@ export function StudySession({
                 <Markdown>{card.answer}</Markdown>
               </div>
             ) : null}
-          </CardContent>
-          <CardFooter className="flex flex-col items-stretch gap-4">
             {revealed ? (
-              <>
+              <div className="flex flex-col gap-4">
                 <div ref={ratingFocus} tabIndex={-1} className="rating-focus">
                   <p className="text-sm font-medium">
                     How well did you recall it?
@@ -308,13 +279,13 @@ export function StudySession({
                     ? "Saving your review…"
                     : "Intervals adapt to your recall. Press 1–4 to rate."}
                 </p>
-              </>
+              </div>
             ) : (
               <Button size="lg" onClick={() => setRevealed(true)}>
                 Reveal answer <ArrowRightIcon data-icon="inline-end" />
               </Button>
             )}
-          </CardFooter>
+          </CardContent>
         </Card>
       ) : (
         <Empty className="min-h-80 border bg-card">
@@ -356,7 +327,7 @@ export function StudySession({
       >
         {lastSave ||
           (card
-            ? "Space to reveal · 1–4 to rate · Progress saved locally"
+            ? "Space or Ctrl/⌘ + Enter to reveal · 1–4 to rate · Progress saved locally"
             : `${reviewed} reviews saved this session`)}
       </p>
       <details className="learning-details">
