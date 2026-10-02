@@ -2,14 +2,20 @@ import { createServer } from "node:http";
 import { mkdir, open, readFile, unlink, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { resolve, join, extname, sep } from "node:path";
-import { createServer as createViteServer } from "vite";
+import { fileURLToPath } from "node:url";
+import type { ViteDevServer } from "vite";
 import { apiHandler } from "./http.ts";
 import { ProgressStore } from "./progress.ts";
 
-const directory = resolve(
-  process.env.FLASHCARDS_DIR ??
-    join(process.env.DATA ?? join(homedir(), "data"), "apps/flashcards"),
-);
+const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8")) as { name: string; appId?: string; productName?: string };
+const appId = manifest.appId ?? manifest.name.split("/").at(-1)!;
+const appName = manifest.productName ?? appId;
+const dataRoot = process.platform === "win32"
+  ? process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local")
+  : process.platform === "darwin"
+    ? join(homedir(), "Library", "Application Support")
+    : process.env.XDG_DATA_HOME ?? join(homedir(), ".local", "share");
+const directory = resolve(process.env.FLASHCARDS_DIR ?? join(dataRoot, appId));
 const port = Number(process.env.PORT ?? 4310);
 if (!Number.isInteger(port) || port < 1 || port > 65535)
   throw new Error("PORT must be an integer between 1 and 65535.");
@@ -39,7 +45,10 @@ await lock.close();
 
 const production = process.argv.includes("--production");
 const api = apiHandler(new ProgressStore(directory));
-const root = resolve("dist");
+const root = resolve(fileURLToPath(new URL(
+  production ? "./client/" : "../dist/client/",
+  import.meta.url,
+)));
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -50,7 +59,7 @@ const types: Record<string, string> = {
   ".ico": "image/x-icon",
 };
 const server = createServer();
-let vite: Awaited<ReturnType<typeof createViteServer>> | undefined;
+let vite: ViteDevServer | undefined;
 
 async function cleanup() {
   await vite?.close();
@@ -60,12 +69,13 @@ async function cleanup() {
 }
 
 try {
-  if (!production)
+  if (!production) {
+    const { createServer: createViteServer } = await import("vite");
     vite = await createViteServer({
       server: { middlewareMode: true, hmr: { server } },
       appType: "spa",
     });
-  else await stat(join(root, "index.html"));
+  } else await stat(join(root, "index.html"));
   server.on("request", (request, response) => {
     const host = request.headers.host;
     const allowedHosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`]);
@@ -131,7 +141,7 @@ try {
   throw error;
 }
 
-console.log(`Flashcards: http://localhost:${port}\nDecks: ${directory}`);
+console.log(`${appName}: http://localhost:${port}\nDecks: ${directory}`);
 for (const signal of ["SIGINT", "SIGTERM"] as const)
   process.once(signal, () => {
     server.close(() => {

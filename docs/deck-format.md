@@ -1,6 +1,6 @@
 # Deck format for agents
 
-Create one UTF-8 `.json` file per topic directly in `$DATA/apps/flashcards` (normally `/home/soleone/data/apps/flashcards`). Only top-level JSON files are scanned. Filenames are descriptive; deck and card IDs define identity.
+Create one UTF-8 `.json` file per topic directly in the app data directory. On Linux the default is `~/.local/share/flashcards`; `flashcards doctor` prints the resolved path, and `flashcards init` lets the learner choose another. Only top-level JSON files are scanned. Filenames are descriptive; deck and card IDs define identity.
 
 ````json
 {
@@ -36,7 +36,7 @@ Keep deck and card IDs unchanged when polishing wording. Give a genuinely differ
 
 ## Agent prompt
 
-> Generate a flashcard deck about [TOPIC] using docs/deck-format.md from this repository. Write the JSON to $DATA/apps/flashcards/[topic].json. Use stable, descriptive IDs, one precise concept per card, and concise answers. Include code examples where useful. Do not modify app-owned progress files. Check JSON syntax, duplicate IDs, and factual accuracy before delivery. Preserve existing IDs when improving an existing deck.
+> Generate a flashcard deck about [TOPIC] using docs/deck-format.md from this repository. Write the JSON into the app data directory shown by `flashcards doctor`, using a descriptive `[topic].json` filename. Use stable, descriptive IDs, one precise concept per card, and concise answers. Include code examples where useful. Do not modify app-owned progress files. Check JSON syntax, duplicate IDs, and factual accuracy before delivery. Preserve existing IDs when improving an existing deck.
 
 ## Learning model
 

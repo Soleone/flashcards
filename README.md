@@ -4,26 +4,33 @@ Local-first flashcards from agent-generated JSON. React, TypeScript, Vite, Tailw
 
 ## Run
 
-Requires Node 22+ and pnpm 11.
+Requires Node.js 22.19+ and pnpm 11 for development.
+
+### Install the local command
+
+The npm package name and command are provisional until the product is named. `package.json` keeps the package name, display name, command, and stable app-data ID separate so branding changes do not silently move existing decks. For now, create a local global link from this checkout:
 
 ```sh
 pnpm install
-mkdir -p "$DATA/apps/flashcards"
-# Optional starter deck, without overwriting an existing file:
-cp -n examples/learning-how-to-learn.json "$DATA/apps/flashcards/learning-how-to-learn.json"
+pnpm build
+npm link
+flashcards
+```
+
+On first launch, Flashcards asks where to keep decks and study progress, then opens **http://localhost:4310** in your browser. Press Enter to accept the default; later launches go straight to the app. Use `flashcards init` to change the folder, `flashcards doctor` to check it and the server lock, or `flashcards start --no-open` to print the address without opening a browser.
+
+On Linux, settings live in `~/.config/flashcards/settings.json`. Decks and progress default to `$XDG_DATA_HOME/flashcards`, or `~/.local/share/flashcards` when `XDG_DATA_HOME` is unset. macOS and Windows use their standard application-support and local-app-data folders. `$DATA` is not used. Choose another location with `flashcards init`, or temporarily override it with `FLASHCARDS_DIR=/path/to/decks`. `FLASHCARDS_CONFIG_PATH` can override the settings file. `PORT` changes the default port 4310.
+
+The server binds to loopback, rejects foreign hosts/origins, and does not support remote hosting or accounts. One process owns a given deck directory, enforced by `.server.lock`; stale locks from a dead process are reclaimed on startup. If an invalid lock blocks startup, inspect it rather than deleting a live server's lock.
+
+### Develop from the checkout
+
+```sh
+pnpm install
 pnpm dev
 ```
 
-Open **http://localhost:4310**. One command serves both the UI and API. Do not start Vite alone: filesystem access requires the backend.
-
-The deck folder defaults to `$DATA/apps/flashcards`, or `~/data/apps/flashcards` without DATA. Override it with `FLASHCARDS_DIR=/path/to/decks pnpm dev`. Set `PORT` to change the default 4310. The server binds to loopback, rejects foreign hosts/origins, and does not support remote hosting or accounts. One process owns a given deck directory, enforced by `.server.lock`; stale locks from a dead process are reclaimed on startup. If an invalid lock blocks startup, inspect it rather than deleting a live server's lock.
-
-```sh
-pnpm build
-pnpm start
-```
-
-Production serves built assets through the same local backend.
+This starts the same UI and API using Vite middleware. Use `FLASHCARDS_DIR=/path/to/decks pnpm dev` for a disposable or alternate deck folder. Do not start Vite alone: filesystem access requires the backend. The optional example deck in `examples/` is never copied automatically; add it yourself if you want sample content.
 
 ## Study
 

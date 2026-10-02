@@ -16,7 +16,7 @@ Learn a topic from an agent-generated JSON deck and capture how well each card i
 
 ## Operating Context
 
-Agents write topic decks in `$DATA/apps/flashcards`. The web app scans this directory and offers a deck dropdown.
+Agents write topic decks in the app-selected data directory. On Linux this defaults to `~/.local/share/flashcards`; the web app scans that directory and offers a deck dropdown.
 
 ## Capabilities and Constraints
 

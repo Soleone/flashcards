@@ -124,9 +124,9 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <a className="brand" href="/" aria-label="Flashcards home">
+        <a className="brand" href="/" aria-label={`${__PRODUCT_NAME__} home`}>
           <LayersIcon className="size-5" />
-          <span>Flashcards</span>
+          <span>{__PRODUCT_NAME__}</span>
         </a>
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-muted-foreground sm:inline">
@@ -246,7 +246,7 @@ export default function App() {
             </EmptyHeader>
             <EmptyContent>
               <code className="break-all text-xs">
-                {catalog?.directory ?? "$DATA/apps/flashcards"}
+                {catalog?.directory ?? "Run flashcards doctor to see the app data folder."}
               </code>
               <p className="text-sm text-muted-foreground">
                 See docs/deck-format.md for the agent-ready format.
@@ -258,7 +258,7 @@ export default function App() {
           <span>Local files. No account. Your pace.</span>
           <details>
             <summary>Deck folder</summary>
-            <code>{catalog?.directory ?? "$DATA/apps/flashcards"}</code>
+            <code>{catalog?.directory ?? "Run flashcards doctor to see the app data folder."}</code>
           </details>
         </footer>
       </main>
